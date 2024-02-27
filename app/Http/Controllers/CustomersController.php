@@ -71,7 +71,7 @@ class CustomersController extends MainController
         $comment->save();*/
         $model = $model->refresh();
         if($request->isMethod('POST')){
-            Mail::send(new Welcome($model));
+            //Mail::send(new Welcome($model));
         }
 
         return $model;

@@ -76,7 +76,7 @@ class ReservationsController extends MainController
         }
 
         if ($request->isMethod('POST')) {
-            $model->user_id = Auth::id();
+            $model->user_id = $request->input('user_id');
         } else {
             if ($request->input('user_id')) {
                 $model->user_id = $request->input('user_id');

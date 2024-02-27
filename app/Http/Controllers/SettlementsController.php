@@ -64,10 +64,10 @@ class SettlementsController extends MainController
 
                 $model->save();
 
-                Mail::send(new TravelinWalletUseRequest($model));
+                // Mail::send(new TravelinWalletUseRequest($model));
             } else if ($model->settlement_method === 1){
                 $model->save();
-                Mail::send(new SettlementRequest($model));
+                // Mail::send(new SettlementRequest($model));
             }
         }
         if ($request->isMethod('PUT')) {

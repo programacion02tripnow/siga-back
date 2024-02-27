@@ -300,9 +300,8 @@ class ReservationsController extends MainController
             $reservation = $reservation_detail->reservation;
 
 
-            //$custome = $reservation_detail->customer_wallet;
-
-            //return $is_request ? Response()->json($customerWallet, $status_code, [], JSON_NUMERIC_CHECK)->setStatusCode($status_code) : $data['data'];
+            // $customerWallet = $reservation->customer->customer_wallets;
+            // return $is_request ? Response()->json($customerWallet, $status_code, [], JSON_NUMERIC_CHECK)->setStatusCode($status_code) : $data['data'];
 
             if (count($reservation->reservation_payments) > 0 ) {
                 $paid = $reservation->reservation_payments->sum('amount');
@@ -330,7 +329,10 @@ class ReservationsController extends MainController
                         'reservation_detail_id' => $reservation_detail->id
                     ]);
 
-                    $totalWallet = $customerWallet->sum('amount') ?? 0;
+                    $customerWallet = $reservation->customer->customer_wallets;
+
+                    //return $is_request ? Response()->json($customerWallet->sum('amount'), $status_code, [], JSON_NUMERIC_CHECK)->setStatusCode($status_code) : $data['data'];
+                    $totalWallet = $customerWallet->sum('amount');
                     $reservation->customer->update([
                         'wallet' => abs($totalWallet)
                     ]);

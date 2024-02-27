@@ -20,7 +20,6 @@ class CustomersController extends MainController
             'email' => 'required|unique:customers,email,NULL,id,deleted_at,NULL',
             'first_name' => 'required',
             'last_name' => 'required',
-            'birthday' => 'required|date_format:"Y-m-d"',
             //'phones' => 'required'
         ];
         $request = request();
@@ -38,8 +37,6 @@ class CustomersController extends MainController
             'first_name.required'=>'El nombre es requerido',
             'last_name.required'=>'El apellido es requerido',
             'phones.required'=>'El teléfono es requerido',
-            'birthday.required'=>'La fecha de nacimiento es requerida',
-            'birthday.date_format'=>'El formato de la fecha de nacimiento es incorrecto',
             'id.required'=>'Se debe especificar el código del cliente a editar'
         ];
     }

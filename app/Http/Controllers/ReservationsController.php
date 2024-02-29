@@ -70,6 +70,8 @@ class ReservationsController extends MainController
 
     public function save($model, Request $request)
     {
+        $user = Auth::user();
+
         if ($request->isMethod('put')) {
             $prev = $this->get_form_info($model->id, false);
             $this->create_model_log($prev, false);
@@ -82,7 +84,11 @@ class ReservationsController extends MainController
                 $model->user_id = $request->input('user_id');
             }
         }
-        $model->edited_by_id = Auth::id();
+
+        $companyConsecutive = $user->company->consecutive;
+        $companyConsecutive = abs($user->company->consecutive) + 1;
+
+        $model->edited_by_id = $user->id;
         $model->customer_id = $request->input('customer_id');
         $model->editable = $request->input('editable');
         $model->cancelable = $request->input('cancelable');
@@ -91,8 +97,14 @@ class ReservationsController extends MainController
         $model->public_price = $request->input('public_price');
         $model->net_price = $request->input('net_price');
         $model->added_price = $request->input('added_price') ?? 0;
+        $model->company_code = $user->company->code;
+        $model->company_consecutive = $companyConsecutive;
         $model->save();
 
+
+        $user->company->update([
+            'consecutive' => $companyConsecutive
+        ]);
 
         $model->reservation_payment_dates()->delete();
         // if ($request->input('with_payments')) {

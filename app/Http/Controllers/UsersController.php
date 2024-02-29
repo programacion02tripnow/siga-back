@@ -60,6 +60,7 @@ class UsersController extends MainController
             'last_name' => 'required',
             'phone' => 'required',
             'multimedia' => 'required',
+            'company' => 'required|exists:companies,id',
         ];
         $request = request();
         if ($request->isMethod('POST')) {
@@ -80,7 +81,8 @@ class UsersController extends MainController
             'phone.required' => 'El teléfono es requerido',
             'password.required' => 'La contraseña es requerida',
             'id' => 'Se debe especificar el código del usuario a editar',
-            'multimedia.required' => 'Debe de seleccionar una foto de perfil'
+            'multimedia.required' => 'Debe de seleccionar una foto de perfil',
+            'company.required' => 'La compañia es requerida'
         ];
     }
 
@@ -95,6 +97,7 @@ class UsersController extends MainController
         $model->last_name = $request->input('last_name');
         $model->phone = $request->input('phone');
         $model->birthday = $request->input('birthday');
+        $model->company_id = $request->input('company');
 
         $multimedia = $request->input('multimedia')[0];
         $model->multimedia_id = $multimedia['id'];

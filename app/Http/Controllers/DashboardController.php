@@ -94,7 +94,9 @@ class DashboardController extends Controller
                     'PickupReservation' => count($tmp['PickupReservation']),
                 ];
             } else if ($user->hasPermission('VIEW_INDIVIDUAL_DASHBOARD')) {
-                $month_reservations = Reservation::where('user_id', $user->id)->whereMonth('date', date('m'))->whereYear('date', date('Y'))->get();
+                $month_reservations = Reservation::where('user_id', $user->id)->whereMonth('created_at', date('m'))->whereYear('created_at', date('Y'))->get();
+
+                return Response()->json($month_reservations)->setStatusCode($status_code);
                 //Suma de ventas totales del mes actual (precio público) del usuario autenticado
                 $data['month_sales'] = $month_reservations->sum('public_price');
                 //Suma de ganancia total del mes actual (precio público - precio neto) del usuario autenticado

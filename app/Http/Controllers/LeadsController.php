@@ -6,6 +6,7 @@ use App\Imports\LeadsImport;
 use App\Models\Customer;
 use App\Models\CustomerPhone;
 use App\Models\Lead;
+use App\Models\LeadComment;
 use App\Models\LeadStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,7 @@ class LeadsController extends MainController
             'destination' => 'required',
             'desirable_date' => 'required|date_format:"Y-m-d"',
             'lead_status' => 'required',
-            'phone'=>'numeric'
+            'phone' => 'numeric'
         ];
         $request = request();
         if ($request->isMethod('PUT')) {
@@ -41,20 +42,21 @@ class LeadsController extends MainController
     protected function getMessages(): array
     {
         return [
-            'email.required'=>'El correo electrónico es requerido',
-            'email.email'=>'El formato del correo electrónico es incorrecto',
-            'first_name.required'=>'El nombre es requerido',
-            'id'=>'Se debe especificar el código del lead a editar',
+            'email.required' => 'El correo electrónico es requerido',
+            'email.email' => 'El formato del correo electrónico es incorrecto',
+            'first_name.required' => 'El nombre es requerido',
+            'id' => 'Se debe especificar el código del lead a editar',
             'lead_channel.required' => 'El canal es requerido',
             'campaign.required' => 'La campaña es requerida',
             'destination.required' => 'El destino es requerido',
             'desirable_date.required' => 'La fecha estimada es requerida',
             'lead_status.required' => 'El estado del lead es requerido',
-            'phone.numeric'=>'El teléfono debe ser numérico'
+            'phone.numeric' => 'El teléfono debe ser numérico'
         ];
     }
 
-    public function save($model, Request $request){
+    public function save($model, Request $request)
+    {
         $model->first_name = Str::title($request->input('first_name'));
         $model->last_name = Str::title($request->input('last_name'));
         $model->email = $request->input('email');
@@ -68,16 +70,16 @@ class LeadsController extends MainController
         $model->user_id = Auth::id();
 
         if ($request->isMethod('put')) {
-            if($request->input('lead_status') !== $model->lead_status_id){
+            if ($request->input('lead_status') !== $model->lead_status_id) {
                 $originaStatus = $model->lead_status;
                 $newStatus = LeadStatus::find($request->input('lead_status'));
                 $user = Auth::user();
-                if($newStatus->order > $originaStatus->order){
-                    if(!$user->hasPermission('UPGRADE_LEAD')){
+                if ($newStatus->order > $originaStatus->order) {
+                    if (!$user->hasPermission('UPGRADE_LEAD')) {
                         throw new \Exception('No tiene permiso para modificar el estado de este recurso', 403);
                     }
                 } else {
-                    if(!$user->hasPermission('DOWNGRADE_LEAD')){
+                    if (!$user->hasPermission('DOWNGRADE_LEAD')) {
                         throw new \Exception('No tiene permiso para modificar el estado de este recurso', 403);
                     }
                 }
@@ -90,42 +92,56 @@ class LeadsController extends MainController
 
         $model->save();
 
+        $saveIds = [];
+        foreach ($request->input('lead_comments') as $comment) {
+            $cp = new LeadComment();
+
+            $cp->lead_id = $model->id;
+            $cp->comment = $comment['comment'];
+            $cp->save();
+            array_push($saveIds, $cp->id);
+        }
+        if ($request->isMethod('PUT') && count($saveIds) > 0) {
+            $model->lead_comments()->whereNotIn('id', $saveIds)->delete();
+        }
+
         return $model;
     }
 
     public function destroy($id)
     {
         $data = [];
-         $data['result'] = '';
-         $status_code = 200;
-         try {
-             $lead = $this->model::find($id);
+        $data['result'] = '';
+        $status_code = 200;
+        try {
+            $lead = $this->model::find($id);
 
-             if (!$lead) {
-                 throw new \Exception('No se han encontrado resultados', 404);
-             }
-             $status = LeadStatus::where('cancelled_status', true)->first();
-             $lead->lead_status_id = $status->id;
-             $this->create_model_log($lead);
-             $lead->save();
+            if (!$lead) {
+                throw new \Exception('No se han encontrado resultados', 404);
+            }
+            $status = LeadStatus::where('cancelled_status', true)->first();
+            $lead->lead_status_id = $status->id;
+            $this->create_model_log($lead);
+            $lead->save();
 
 
-             $data['result'] = 'success';
+            $data['result'] = 'success';
 
-         } catch (\Exception $ex) {
-             $data['result'] = 'error';
-             $data['error'] = $ex->getMessage();
-             $status_code = $ex->getCode();
-         }
-         return Response()->json($data)->setStatusCode($status_code);
+        } catch (\Exception $ex) {
+            $data['result'] = 'error';
+            $data['error'] = $ex->getMessage();
+            $status_code = $ex->getCode();
+        }
+        return Response()->json($data)->setStatusCode($status_code);
     }
 
-    public function import_from_excel(Request $request){
+    public function import_from_excel(Request $request)
+    {
         if (Auth::check()) {
-            $file = 'temp_'.bin2hex(random_bytes(10)).'.xlsx';
+            $file = 'temp_' . bin2hex(random_bytes(10)) . '.xlsx';
 
             $this->create_image($request->input('excel'), 'excel_imports', $file);
-            $path = storage_path('excel_imports/'.$file);
+            $path = storage_path('excel_imports/' . $file);
 
             Excel::import(new LeadsImport(), $path);
 
@@ -138,7 +154,8 @@ class LeadsController extends MainController
         return json_encode(['result' => 'error', 'error' => 'No tiene acceso']);
     }
 
-    public function lead_to_customer(Request $request){
+    public function lead_to_customer(Request $request)
+    {
         $data = [];
         $data['result'] = '';
         $status_code = 200;
@@ -174,5 +191,25 @@ class LeadsController extends MainController
         return Response()->json($data)->setStatusCode($status_code);
     }
 
+    public function create_comment(Request $request)
+    {
+        $data = [];
+        $data['result'] = '';
+        $status_code = 200;
+        try {
+            $comment = new LeadComment();
+            $comment->customer_id = $request->input('lead_id');
+            $comment = $request->input('comment');
+            $comment->user_id = Auth::id();
+            $comment->save();
 
+            $data['result'] = 'success';
+
+        } catch (\Exception $ex) {
+            $data['result'] = 'error';
+            $data['error'] = $ex->getMessage();
+            $status_code = $ex->getCode();
+        }
+        return Response()->json($data)->setStatusCode($status_code);
+    }
 }

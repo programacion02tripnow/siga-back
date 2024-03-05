@@ -21,20 +21,28 @@ class Lead extends Model
         'delete' => 'DELETE_LEAD',
     ];
 
-    public function lead_channel(){
+    public function lead_channel()
+    {
         return $this->belongsTo(LeadChannel::class);
     }
 
-    public function lead_status(){
+    public function lead_status()
+    {
         return $this->belongsTo(LeadStatus::class);
     }
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
     public function logs()
     {
         return $this->morphOne(Log::class, 'logable');
+    }
+
+    public function lead_comments()
+    {
+        return $this->hasMany(LeadComment::class);
     }
 }

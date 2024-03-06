@@ -119,10 +119,10 @@ class LeadsController extends MainController
             if (!$lead) {
                 throw new \Exception('No se han encontrado resultados', 404);
             }
-            $status = LeadStatus::where('cancelled_status', true)->first();
-            $lead->lead_status_id = $status->id;
+            // $status = LeadStatus::where('cancelled_status', true)->first();
+            // $lead->lead_status_id = $status->id;
             $this->create_model_log($lead);
-            $lead->save();
+            $lead->delete();
 
 
             $data['result'] = 'success';

@@ -67,7 +67,7 @@ class LeadsController extends MainController
         $model->campaign = $request->input('campaign');
         $model->destination = $request->input('destination');
         $model->desirable_date = $request->input('desirable_date');
-        $model->user_id = Auth::id();
+        $model->user_id = $request->input('user');
 
         if ($request->isMethod('put')) {
             if ($request->input('lead_status') !== $model->lead_status_id) {

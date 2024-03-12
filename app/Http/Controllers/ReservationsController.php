@@ -237,7 +237,7 @@ class ReservationsController extends MainController
         $model = $model->refresh();
 
         if ($model->status === 1 && $request->isMethod('POST')) {
-            Mail::send(new PendingPayment($model));
+            //Mail::send(new PendingPayment($model));
         } elseif ($model->status === 2) {
             Mail::send(new ReservationConfirmation($model));
         }

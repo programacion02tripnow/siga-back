@@ -34,7 +34,7 @@ class ReservationConfirmation extends Mailable
     {
         $this->subject = 'Su reserva ha sido confirmada';
         $this->to($this->reservation->customer->email);
-        $this->bcc(['jtzuc@dcitdev.com', 'christianflota@gmail.com', 'soportes@tripnow.com']);
+        $this->bcc(['programacion01@tripnow.mx', 'programacion02@tripnow.mx', 'soportes@tripnow.com']);
 
         $this->view('emails.reservation_confirmation', ['reservation' => $this->reservation])
             ->attach(public_path('aviso-privacidad.pdf'), [

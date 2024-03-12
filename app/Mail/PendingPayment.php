@@ -32,8 +32,7 @@ class PendingPayment extends Mailable
     public function build()
     {
         $this->subject = 'Su reserva se ha confirmado y está pendiente de pago';
-        $this->to($this->reservation->customer->email);
-        $this->bcc(['jtzuc@dcitdev.com', 'christianflota@gmail.com', 'soportes@tripnow.com']);
+        $this->bcc(['programacion01@tripnow.mx', 'programacion02@tripnow.mx']);
         //$this->bcc(['jtzuc@dcitdev.com']);
 
         return $this->view('emails.pending_payment', ['reservation' => $this->reservation])
